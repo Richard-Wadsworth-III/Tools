@@ -1,0 +1,70 @@
+---
+title: "Chargaff's Rule"
+author: "Santonastaso"
+date: "2022-09-05"
+output: html_document
+---
+
+# Chargaff's Rule
+It seemed like a nice exercise to build a tool that visualizes the percentages of each nucleotide in a sequence.
+Improvements: 
+1) Automate stripping the metadata header.
+2) Label the bar graph with the metadata
+3) Automate scraping a sequence from NCBI
+
+```{r setup, include=FALSE}
+library(readr)
+library(dplyr)
+library(Dict)
+library(stringr)
+setwd('C:/Users/tsant/Documents/Data')
+mystring <- read_file("Sequence.txt") #I had to manually remove the metadata header. Not great
+nucs <- c("A", "C", "G", "T")
+```
+
+```{r}
+mystring <- read_file("Sequence.txt") #read the string in
+```
+
+```{r}
+#clean all linebreaks and carriage returns
+a <- gsub(pattern = "\\r",
+          replacement = "",
+          x = mystring)
+a <- gsub(pattern = "\\n",
+          replacement = "",
+          x = a)
+```
+
+
+```{r}
+tallies_function <- function(seq){                  #set up function to build list of tallies of nucleotides
+    tally_list <- c()                               #set up list of tallies (nucleotides)
+    for(i in nucs){                                 #set up loop through nucleotides list
+        temp_num <- str_count(seq, i)           #find number of each nucleotide (A, C, G, T)
+        tally_list <- append(tally_list, temp_num)  #make list of tallies of each number
+    }
+    return(tally_list)
+}
+tallies <- (tallies_function(a))
+```
+
+
+```{r}
+#Turns out, I don't need a dictionary. But it sure seems like I should...or at least might.
+nt_dict <- c(
+  "A" = tallies[1],
+  "C" = tallies[2],
+  "G" = tallies[3],
+  "T" = tallies[4]
+)
+```
+
+Make a bar plot. Cluster the base-pairs, and color the bars per genetics custom.
+```{r}
+nt_order <- c(nucs[1], nucs[4], nucs[2], nucs[3])
+tally_order<- c(tallies[1], tallies[4], tallies[2], tallies[3])
+cols <- c("blue", "yellow", "green", "red")
+barplot(tally_order, col = cols, names.arg = nt_order, las = 1, ylim = c(0, max(tally_order)+1000), space = c(0.1, 0.1, 1, 0.1), width = c(0.2, 0.2, 0.2, 0.2), xlab = "Nucleotides", ylab = "Counts")
+```
+
